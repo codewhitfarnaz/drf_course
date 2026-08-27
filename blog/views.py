@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -56,5 +57,20 @@ class AddArticleView(APIView):
         serializer=ArticleSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Article added successfully!"})
-        return Response(serializer.errors)
+            return Response({"response":"Added"},status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+class ArticleUpdateView(APIView):
+    def put(self,request,pk):
+        instance=Article.objects.get(id=pk)
+        serializer=ArticleSerializer(data=request.data,partial=True)
+        if serializer.is_valid():
+            serializer.update(instance=instance,validated_data=serializer.validated_data)
+            return Response({"response":"update"},status=status.HTTP_200_OK)
+        return Response(serializer.errors ,status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete(self,request,pk):
+        instance=Article.objects.get(id=pk)
+        instance.delete()
+        return Response({"message": "Article deleted successfully!"})
